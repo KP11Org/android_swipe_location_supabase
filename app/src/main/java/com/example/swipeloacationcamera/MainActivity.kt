@@ -28,7 +28,9 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.exceptions.HttpRequestException
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -48,11 +50,20 @@ class MainActivity : AppCompatActivity() {
             try {
                 SupabaseConn.supabase.auth.clearSession()
                 SupabaseConn.supabase.auth.signInWith(Email){
-                    email = "testuser@gmail.com"
+                    email = "testuse@gmail.com"
                     password = "User12345678!"
                 }
-            }catch (ex : Exception){
+            }catch (ex : AuthRestException){
+                Log.e("AuthFailed", ex.message.toString())
+                Log.e("AuthFailed", ex.statusCode.toString())
+                Log.e("AuthFailed", ex.description.toString())
+            }catch (ex : HttpRequestException){
+                Log.e("InternetConnection", ex.message.toString())
+            }
+            catch (ex : Exception){
                 Log.e("auth", ex.message.toString())
+                Log.e("auth", ex.cause.toString())
+                Log.e("auth", ex.toString())
             }
 
         }.invokeOnCompletion {
