@@ -57,18 +57,17 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //Конфигурация карты
         getInstance().load(this, androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
+        //---
         setContentView(R.layout.activity_main)
-
         //Затемнение экрана
         window.attributes = window.attributes.apply {
             screenBrightness = 0f
         }
+        //Установка карты
         map = findViewById(R.id.map)
         map.setTileSource(TileSourceFactory.MAPNIK)
-
-
-
         //Запрос к БД на авторизацию
         lifecycleScope.launch {
             try {
@@ -156,13 +155,13 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             when {
-                permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     getCurrentLocation()
                 }
-                permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     getCurrentLocation()
                 } else -> {
-                    Toast.makeText(this, "Access denide", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Access denied", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -181,6 +180,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentLocation() {
+        //Проверка что разрешения выданы
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -191,6 +191,7 @@ class MainActivity : AppCompatActivity() {
         ) {
             return
         }
+        //Получаем геопозицию пользователя
         locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f
         ) {
             getAddress(it)
@@ -199,6 +200,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun getAddress(location: Location) {
+        //Устанавливаем курсор к пользователю
         mLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
         mLocationOverlay.enableMyLocation()
         map.overlays.add(mLocationOverlay)
@@ -209,7 +211,7 @@ class MainActivity : AppCompatActivity() {
             //Перемещение к точке
             map.controller.setCenter(GeoPoint(latitude, longitude))
             map.setZoomLevel(13.0)
-            //Получение текущей позиции
+            //Получение текущего адресса по координатам
             //Log.e("Location", location.toString())
             val geo = Geocoder(this, Locale("RU-ru"))
 
