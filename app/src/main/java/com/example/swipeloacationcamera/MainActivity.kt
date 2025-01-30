@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Geocoder
+import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -156,10 +157,10 @@ class MainActivity : AppCompatActivity() {
         ) { permissions ->
             when {
                 permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                    getAddress()
+                    getCurrentLocation()
                 }
                 permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                    getAddress()
+                    getCurrentLocation()
                 } else -> {
                     Toast.makeText(this, "Access denide", Toast.LENGTH_LONG).show()
                 }
@@ -179,15 +180,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f
+        ) {
+            getAddress(it)
+        }
+    }
 
-    private fun getAddress() {
+
+    private fun getAddress(location: Location) {
         mLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
         mLocationOverlay.enableMyLocation()
         map.overlays.add(mLocationOverlay)
         map.invalidate()
         try {
-            val latitude = mLocationOverlay.myLocation.latitude
-            val longitude = mLocationOverlay.myLocation.longitude
+            val latitude = location.latitude
+            val longitude = location.longitude
             //Перемещение к точке
             map.controller.setCenter(GeoPoint(latitude, longitude))
             map.setZoomLevel(13.0)
